@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import AdminLayout from './layouts/AdminLayout'
+import HeroBannerPage from './pages/HeroBannerPage'
 
 import CategoryPage from './pages/CategoryPage'
 import ProductPage from './pages/ProductPage'
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/hero-banner" element={<HeroBannerPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" />} />

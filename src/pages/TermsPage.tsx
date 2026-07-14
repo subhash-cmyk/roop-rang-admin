@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react'
+import { ClassicEditor, Essentials, Paragraph, Bold, Italic, Heading, Link, List } from "ckeditor5";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import "ckeditor5/ckeditor5.css";
 import toast from 'react-hot-toast'
 import { termsAPI } from '../services/api'
 
@@ -12,6 +15,7 @@ type TermsForm = {
 }
 
 export default function TermsPage() {
+  const [content, setContent] = useState("");
   const [form, setForm] = useState<TermsForm>({
     title: 'Terms & Conditions',
     slug: 'terms-and-conditions',
@@ -137,16 +141,44 @@ export default function TermsPage() {
           </label>
         </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium">Content</label>
-          <textarea
-            rows={18}
-            value={form.content}
-            onChange={(e) => handleChange('content', e.target.value)}
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:ring-2 focus:ring-[#D4AF37]"
-            placeholder="Enter terms and conditions content..."
-          />
-        </div>
+       <CKEditor
+                editor={ClassicEditor}
+                config={{
+                  licenseKey: 'GPL',
+      
+                  plugins: [
+                    Essentials,
+                    Paragraph,
+                    Bold,
+                    Italic,
+                    Heading,
+                    Link,
+                    List
+                  ],
+      
+                  toolbar: [
+                    'undo',
+                    'redo',
+                    '|',
+                    'heading',
+                    '|',
+                    'bold',
+                    'italic',
+                    'link',
+                    'bulletedList',
+                    'numberedList'
+                  ]
+                }}
+      
+                data={form.content}
+      
+                onChange={(event, editor) => {
+                  handleChange(
+                    "content",
+                    editor.getData()
+                  )
+                }}
+              />
 
         <div className="flex justify-end">
           <button

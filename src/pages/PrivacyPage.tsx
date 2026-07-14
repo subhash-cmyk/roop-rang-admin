@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react'
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import { ClassicEditor, Essentials, Paragraph, Bold, Italic, Heading, Link, List } from "ckeditor5";
+import "ckeditor5/ckeditor5.css";
 import toast from 'react-hot-toast'
 import { privacyAPI } from '../services/api'
 
@@ -11,6 +14,7 @@ type PrivacyForm = {
 }
 
 export default function PrivacyPage() {
+  const [content, setContent] = useState("");
   const [form, setForm] = useState<PrivacyForm>({
     title: 'Privacy Policy',
     content: '',
@@ -99,17 +103,6 @@ export default function PrivacyPage() {
             placeholder="Privacy Policy"
           />
         </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium">Version</label>
-          <input
-            value={form.version}
-            onChange={(e) => handleChange('version', e.target.value)}
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:ring-2 focus:ring-[#D4AF37]"
-            placeholder="1.0"
-          />
-        </div>
-
         <div className="flex items-center gap-2">
           <input
             id="privacy-active"
@@ -121,18 +114,44 @@ export default function PrivacyPage() {
             Active
           </label>
         </div>
+        <CKEditor
+          editor={ClassicEditor}
+          config={{
+            licenseKey: 'GPL',
 
-        <div>
-          <label className="mb-1 block text-sm font-medium">Content</label>
-          <textarea
-            rows={18}
-            value={form.content}
-            onChange={(e) => handleChange('content', e.target.value)}
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:ring-2 focus:ring-[#D4AF37]"
-            placeholder="Enter privacy policy content..."
-          />
-        </div>
+            plugins: [
+              Essentials,
+              Paragraph,
+              Bold,
+              Italic,
+              Heading,
+              Link,
+              List
+            ],
 
+            toolbar: [
+              'undo',
+              'redo',
+              '|',
+              'heading',
+              '|',
+              'bold',
+              'italic',
+              'link',
+              'bulletedList',
+              'numberedList'
+            ]
+          }}
+
+          data={form.content}
+
+          onChange={(event, editor) => {
+            handleChange(
+              "content",
+              editor.getData()
+            )
+          }}
+        />
         <div className="flex justify-end">
           <button
             onClick={handleSave}

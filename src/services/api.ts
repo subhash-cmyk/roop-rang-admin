@@ -113,10 +113,11 @@ export const privacyAPI = {
   get: () => API.get('/privacy-policy'),
   getAll: () => API.get('/privacy-policy/all'),
   create: (data: any) => API.post('/privacy-policy', data),
-  update: (id: number | string, data: any) => API.put(`/privacy-policy/${id}`, data),
-  delete: (id: number | string) => API.delete(`/privacy-policy/${id}`),
+  update: (id: number | string, data: any) =>
+    API.put(`/privacy-policy/${id}`, data),
+  delete: (id: number | string) =>
+    API.delete(`/privacy-policy/${id}`),
 }
-
 // ================= TERMS =================
 export const termsAPI = {
   get: () => API.get('/terms'),
@@ -132,6 +133,28 @@ export const settingsAPI = {
   update: (data: any) => API.put('/settings', data),
 }
 
+// ================= HERO =================
+
+export const heroAPI = {
+  get: () => API.get("/hero"),
+
+  update: (data: any) =>
+    API.put("/hero", data),
+}
+export const getImageUrl = (image?: string) => {
+
+  if (!image) return "";
+
+  if (image.startsWith("http")) {
+    return image;
+  }
+
+  const baseURL = API.defaults.baseURL?.replace("/api","");
+
+  return `${baseURL}${image}`;
+
+};
+
 // ================= UPLOAD =================
 export const uploadAPI = {
   uploadSingle: (formData: FormData) =>
@@ -143,4 +166,9 @@ export const uploadAPI = {
     API.post('/upload/multiple', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+    hero: (formData: FormData) =>
+    API.post('/upload/hero', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+    
 }
