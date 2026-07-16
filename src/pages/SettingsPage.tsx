@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { settingsAPI } from '../services/api'
 
 type SettingsForm = {
-  siteName: string
   supportEmail: string
   supportPhone: string
   address: string
@@ -15,7 +14,6 @@ type SettingsForm = {
 }
 
 const initialForm: SettingsForm = {
-  siteName: '',
   supportEmail: '',
   supportPhone: '',
   address: '',
@@ -29,9 +27,8 @@ const initialForm: SettingsForm = {
 
 function mapSettingsToForm(data: any): SettingsForm {
   return {
-    siteName: data?.siteName || data?.name || '',
-    supportEmail: data?.supportEmail || data?.email || '',
-    supportPhone: data?.supportPhone || data?.phone || '',
+    supportEmail: data?.supportEmail || '',
+    supportPhone: data?.supportPhone || '',
     address: data?.address || '',
     currency: data?.currency || 'INR',
     taxRate:
@@ -78,7 +75,6 @@ export default function SettingsPage() {
       setSaving(true)
 
       await settingsAPI.update({
-        siteName: form.siteName.trim(),
         supportEmail: form.supportEmail.trim(),
         supportPhone: form.supportPhone.trim(),
         address: form.address.trim(),
@@ -114,15 +110,6 @@ export default function SettingsPage() {
           <div className="text-red-500">{error}</div>
         ) : (
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium">Site Name</label>
-              <input
-                className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                value={form.siteName}
-                onChange={(e) => onChange('siteName', e.target.value)}
-                placeholder="Roop Rang"
-              />
-            </div>
 
             <div>
               <label className="mb-1 block text-sm font-medium">Support Email</label>

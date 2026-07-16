@@ -142,9 +142,18 @@ export const termsAPI = {
 
 // ================= SETTINGS =================
 export const settingsAPI = {
-  get: () => API.get('/settings'),
-  update: (data: any) => API.put('/settings', data),
-}
+
+  get: async () => {
+    const res = await API.get("/settings");
+    return res.data;
+  },
+
+  update: async (data: any) => {
+    const res = await API.put("/settings", data);
+    return res.data;
+  }
+
+};
 
 // ================= HERO =================
 
