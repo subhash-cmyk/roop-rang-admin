@@ -4,14 +4,13 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import AdminLayout from './layouts/AdminLayout'
 import HeroBannerPage from './pages/HeroBannerPage'
-
 import CategoryPage from './pages/CategoryPage'
 import ProductPage from './pages/ProductPage'
 import OfferPage from './pages/OfferPage'
 import InquiryPage from './pages/InquiryPage'
 import UserPage from './pages/UserPage'
 import SettingsPage from './pages/SettingsPage'
-//import SupportPage from './pages/SupportPage'
+import AboutPage from './pages/AboutPage';
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 
@@ -38,6 +37,7 @@ export default function App() {
         <Route path="/offers" element={<OfferPage />} />
         <Route path="/inquiries" element={<InquiryPage />} />
         <Route path="/users" element={<UserPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/settings" element={<SettingsPage />} />

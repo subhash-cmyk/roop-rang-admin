@@ -194,3 +194,20 @@ export const uploadAPI = {
     }),
     
 }
+//============== ABOUT ==============================
+export const aboutAPI = {
+  get: async () => {
+    const res = await API.get("/about");
+    return res.data;
+  },
+
+  save: async (data: FormData) => {
+    const res = await API.post("/about", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return res.data;
+  },
+};

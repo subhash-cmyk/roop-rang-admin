@@ -21,7 +21,7 @@ export default function Dashboard() {
     { label: 'Offers', value: stats?.cards?.totalOffers ?? '—', icon: <BadgePercent />, color: 'bg-emerald-50 text-emerald-700' },
     { label: 'Inquiries', value: stats?.cards?.totalInquiries ?? '—', icon: <MessageSquare />, color: 'bg-blue-50 text-blue-700' },
     { label: 'Users', value: stats?.cards?.totalUsers ?? '—', icon: <Users />, color: 'bg-purple-50 text-purple-700' },
-    { label: 'Visitors', value: stats?.cards?.visitors ?? '12,483', icon: <Eye />, color: 'bg-rose-50 text-rose-700' },
+    { label: 'Visitors', value: stats?.cards?.visitors ?? '-', icon: <Eye />, color: 'bg-rose-50 text-rose-700' },
   ]
   return (
     <div className="p-6 max-w-7xl mx-auto">

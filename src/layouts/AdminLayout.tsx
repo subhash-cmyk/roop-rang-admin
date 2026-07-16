@@ -1,12 +1,10 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { Image, Link } from "lucide-react";
 import {
   LayoutDashboard,
   Package,
   Layers,
   BadgePercent,
   MessageSquare,
-  LifeBuoy,
   Users,
   Settings,
   FileText,
@@ -59,11 +57,15 @@ export default function AdminLayout() {
       title: 'Settings',
       description: 'Configure application settings.',
     },
-      // Add this
-  '/hero-banner': {
-    title: 'Header Banner',
-    description: 'Manage homepage header banner image and content.',
-  },
+    // Add this
+    '/hero-banner': {
+      title: 'Header Banner',
+      description: 'Manage homepage header banner image and content.',
+    },
+    '/about': {
+      title: 'About Us',
+      description: 'Manage About Us page content.',
+    },
   }
 
   const currentPage =
@@ -82,8 +84,8 @@ export default function AdminLayout() {
     { to: '/categories', icon: <Layers size={18} />, label: 'Categories' },
     { to: '/offers', icon: <BadgePercent size={18} />, label: 'Offers' },
     { to: '/inquiries', icon: <MessageSquare size={18} />, label: 'Inquiries' },
-    //{ to: '/support', icon: <LifeBuoy size={18} />, label: 'Support' },
     { to: '/users', icon: <Users size={18} />, label: 'Users' },
+    { to: '/about', icon: <FileText size={18} />, label: 'About Us' },
     { to: '/privacy', icon: <Shield size={18} />, label: 'Privacy Policy' },
     { to: '/terms', icon: <FileText size={18} />, label: 'Terms & Conditions' },
     { to: '/settings', icon: <Settings size={18} />, label: 'Settings' },
