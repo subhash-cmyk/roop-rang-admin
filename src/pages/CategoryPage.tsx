@@ -44,6 +44,8 @@ export default function CategoryPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Category | null>(null)
   const [form, setForm] = useState<CategoryForm>(initialForm)
@@ -51,11 +53,15 @@ export default function CategoryPage() {
   const fetchCategories = async () => {
     try {
       setLoading(true)
-      setError('')
-      const res = await categoryAPI.getAll()
-      setCategories(normalizeList(res))
+      setError("")
+
+      const res = await categoryAPI.getAll(page, 10, search)
+
+      setCategories(res.data.data || [])
+      setTotalPages(res.data.pagination?.pages || 1)
+
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to load categories')
+      setError(err?.response?.data?.message || "Failed to load categories")
     } finally {
       setLoading(false)
     }
@@ -63,7 +69,7 @@ export default function CategoryPage() {
 
   useEffect(() => {
     fetchCategories()
-  }, [])
+  }, [page, search])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -186,7 +192,10 @@ export default function CategoryPage() {
             className="rounded-xl border px-4 py-2 outline-none w-64 bg-white dark:bg-[#1e1e1e]"
             placeholder="Search categories..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(1)
+            }}
           />
           <button
             onClick={openCreate}
@@ -206,6 +215,7 @@ export default function CategoryPage() {
         ) : filtered.length === 0 ? (
           <div className="p-6 text-gray-500">No categories found.</div>
         ) : (
+          <>
           <div className="overflow-auto">
             <table className="w-full min-w-[700px]">
               <thead className="bg-gray-50 dark:bg-[#252525]">
@@ -272,6 +282,38 @@ export default function CategoryPage() {
               </tbody>
             </table>
           </div>
+          <div className="flex items-center justify-center gap-2 border-t bg-white py-4 dark:bg-[#1e1e1e]">
+  <button
+    disabled={loading || page === 1}
+    onClick={() => setPage(page - 1)}
+    className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    Previous
+  </button>
+
+  {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+    <button
+      key={num}
+      onClick={() => setPage(num)}
+      className={`rounded-lg border px-4 py-2 ${
+        page === num
+          ? "bg-black text-white"
+          : "hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"
+      }`}
+    >
+      {num}
+    </button>
+  ))}
+
+  <button
+    disabled={loading || page === totalPages}
+    onClick={() => setPage(page + 1)}
+    className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    Next
+  </button>
+</div>
+</>
         )}
       </div>
 

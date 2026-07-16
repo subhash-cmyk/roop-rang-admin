@@ -34,6 +34,9 @@ export default function InquiryPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
   const [selected, setSelected] = useState<Inquiry | null>(null)
   const [showView, setShowView] = useState(false)
   const [showReply, setShowReply] = useState(false)
@@ -43,10 +46,17 @@ export default function InquiryPage() {
     try {
       setLoading(true)
       setError('')
-      const res = await inquiryAPI.getAll()
+
+      const res = await inquiryAPI.getAll(page, limit)
+
       setInquiries(normalizeList(res))
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to load inquiries')
+
+      setTotalPages(
+        res?.data?.pagination?.pages || 1
+      )
+
+     } catch (err: any) {
+      setError(err?.response?.data?.message || 'Failed to load products')
     } finally {
       setLoading(false)
     }
@@ -54,7 +64,7 @@ export default function InquiryPage() {
 
   useEffect(() => {
     fetchInquiries()
-  }, [])
+  }, [page])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -140,7 +150,10 @@ export default function InquiryPage() {
           className="rounded-xl border px-4 py-2 outline-none w-full md:w-72 bg-white dark:bg-[#1e1e1e]"
           placeholder="Search inquiries..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value)
+            setPage(1)
+          }}
         />
       </div>
 
@@ -152,6 +165,7 @@ export default function InquiryPage() {
         ) : filtered.length === 0 ? (
           <div className="p-6 text-gray-500">No inquiries found.</div>
         ) : (
+          <>
           <div className="overflow-auto">
             <table className="w-full min-w-[1000px]">
               <thead className="bg-gray-50 dark:bg-[#252525]">
@@ -208,6 +222,38 @@ export default function InquiryPage() {
               </tbody>
             </table>
           </div>
+          {/* Pagination */}
+        <div className="flex items-center justify-center gap-2 border-t bg-white py-4 dark:bg-[#1e1e1e]">
+          <button
+            disabled={loading || page === 1}
+            onClick={() => setPage(page - 1)}
+            className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+            <button
+              key={num}
+              onClick={() => setPage(num)}
+              className={`rounded-lg border px-4 py-2 transition-all ${page === num
+                  ? "bg-black text-white"
+                  : "hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"
+                }`}
+            >
+              {num}
+            </button>
+          ))}
+
+          <button
+            disabled={loading || page === totalPages}
+            onClick={() => setPage(page + 1)}
+            className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+    </>
         )}
       </div>
 

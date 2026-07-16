@@ -44,26 +44,30 @@ export default function UserPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<User | null>(null)
   const [form, setForm] = useState<UserForm>(initialForm)
 
-  const fetchUsers = async () => {
-    try {
-      setLoading(true)
-      setError('')
-      const res = await userAPI.getAll()
-      setUsers(normalizeList(res))
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to load users')
-    } finally {
-      setLoading(false)
-    }
+const fetchUsers = async () => {
+  try {
+    setLoading(true);
+
+    const res = await userAPI.getAll(page, 10, search);
+
+    setUsers(res.data.data);
+    setTotalPages(res.data.pagination.pages);
+  } catch (err: any) {
+    setError(err?.response?.data?.message || "Failed to load users");
+  } finally {
+    setLoading(false);
   }
+};
 
   useEffect(() => {
     fetchUsers()
-  }, [])
+  }, [page, search])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -152,7 +156,10 @@ export default function UserPage() {
           className="rounded-xl border px-4 py-2 outline-none w-full md:w-72 bg-white dark:bg-[#1e1e1e]"
           placeholder="Search users..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value)
+            setPage(1)
+          }}
         />
       </div>
 
@@ -164,6 +171,7 @@ export default function UserPage() {
         ) : filtered.length === 0 ? (
           <div className="p-6 text-gray-500">No users found.</div>
         ) : (
+          <>
           <div className="overflow-auto">
             <table className="w-full min-w-[900px]">
               <thead className="bg-gray-50 dark:bg-[#252525]">
@@ -178,7 +186,7 @@ export default function UserPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((item) => (
+                {users.map((item) => (
                   <tr key={getId(item)} className="border-t">
                     <td className="px-4 py-3 font-medium">
                       {item.name || item.fullName || '-'}
@@ -188,11 +196,10 @@ export default function UserPage() {
                     <td className="px-4 py-3 capitalize">{item.role || 'user'}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`rounded-full px-3 py-1 text-xs ${
-                          item.status === false || item.status === 'inactive'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-green-100 text-green-700'
-                        }`}
+                        className={`rounded-full px-3 py-1 text-xs ${item.status === false || item.status === 'inactive'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-green-100 text-green-700'
+                          }`}
                       >
                         {item.status === false || item.status === 'inactive' ? 'Inactive' : 'Active'}
                       </span>
@@ -221,6 +228,38 @@ export default function UserPage() {
               </tbody>
             </table>
           </div>
+<div className="flex items-center justify-center gap-2 border-t bg-white py-4 dark:bg-[#1e1e1e]">
+  <button
+    disabled={page === 1}
+    onClick={() => setPage(page - 1)}
+    className="rounded-lg border px-4 py-2 disabled:opacity-50"
+  >
+    Previous
+  </button>
+
+  {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+    <button
+      key={num}
+      onClick={() => setPage(num)}
+      className={`rounded-lg border px-4 py-2 ${
+        page === num
+          ? 'bg-black text-white'
+          : 'hover:bg-gray-100 dark:hover:bg-[#2a2a2a]'
+      }`}
+    >
+      {num}
+    </button>
+  ))}
+
+  <button
+    disabled={page === totalPages}
+    onClick={() => setPage(page + 1)}
+    className="rounded-lg border px-4 py-2 disabled:opacity-50"
+  >
+    Next
+  </button>
+</div>
+</>
         )}
       </div>
 

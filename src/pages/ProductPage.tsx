@@ -89,6 +89,8 @@ export default function ProductPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
   const [form, setForm] = useState<ProductForm>(initialForm)
@@ -102,8 +104,15 @@ export default function ProductPage() {
     try {
       setLoading(true)
       setError('')
-      const res = await productAPI.getAll()
+
+      const res = await productAPI.getAll(page, 12, search)
+
       setProducts(normalizeProducts(res))
+
+      setTotalPages(
+        res?.data?.pagination?.pages || 1
+      )
+
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to load products')
     } finally {
@@ -122,6 +131,9 @@ export default function ProductPage() {
 
   useEffect(() => {
     fetchProducts()
+  }, [page, search])
+
+  useEffect(() => {
     fetchCategories()
   }, [])
 
@@ -259,7 +271,9 @@ export default function ProductPage() {
       }
 
       closeModal()
-      fetchProducts()
+      // Agar last page par new product add hua hai to page 1 par le jao
+      setPage(1)
+      await fetchProducts()
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Failed to save product')
     } finally {
@@ -276,7 +290,13 @@ export default function ProductPage() {
 
     try {
       await productAPI.delete(String(id))
-      fetchProducts()
+
+      // Agar current page par last record delete hua hai
+      if (products.length === 1 && page > 1) {
+        setPage(page - 1)
+      } else {
+        await fetchProducts()
+      }
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Failed to delete product')
     }
@@ -297,7 +317,10 @@ export default function ProductPage() {
             className="rounded-xl border px-4 py-2 outline-none w-64 bg-white dark:bg-[#1e1e1e]"
             placeholder="Search products..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(1)
+            }}
           />
           <button
             onClick={openCreate}
@@ -317,6 +340,7 @@ export default function ProductPage() {
         ) : filtered.length === 0 ? (
           <div className="p-6 text-gray-500">No products found.</div>
         ) : (
+        <>
           <div className="overflow-auto">
             <table className="w-full min-w-[1200px]">
               <thead className="bg-gray-50 dark:bg-[#252525]">
@@ -391,260 +415,296 @@ export default function ProductPage() {
               </tbody>
             </table>
           </div>
-        )}
+        {/* Pagination */}
+        
+        <div className="flex items-center justify-center gap-2 border-t bg-white py-4 dark:bg-[#1e1e1e]">
+          <button
+            disabled={loading || page === 1}
+            onClick={() => setPage(page - 1)}
+            className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+            <button
+              key={num}
+              onClick={() => setPage(num)}
+              className={`rounded-lg border px-4 py-2 transition-all ${page === num
+                  ? "bg-black text-white"
+                  : "hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"
+                }`}
+            >
+              {num}
+            </button>
+          ))}
+
+          <button
+            disabled={loading || page === totalPages}
+            onClick={() => setPage(page + 1)}
+            className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+        </>
+    )}
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 overflow-y-auto">
-          <div className="w-full max-w-4xl rounded-2xl bg-white p-6 shadow-xl dark:bg-[#1e1e1e]">
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-xl font-semibold">
-                {editing ? 'Edit Product' : 'Add Product'}
-              </h2>
-              <button onClick={closeModal} className="rounded-lg border p-2">
-                <X size={16} />
-              </button>
+
+      {
+        showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 overflow-y-auto">
+            <div className="w-full max-w-4xl rounded-2xl bg-white p-6 shadow-xl dark:bg-[#1e1e1e]">
+              <div className="mb-5 flex items-center justify-between">
+                <h2 className="text-xl font-semibold">
+                  {editing ? 'Edit Product' : 'Add Product'}
+                </h2>
+                <button onClick={closeModal} className="rounded-lg border p-2">
+                  <X size={16} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Product Name</label>
+                  <input
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.name}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setForm((prev) => ({
+                        ...prev,
+                        name: value,
+                        slug: prev.slug ? prev.slug : autoSlug(value),
+                      }))
+                    }}
+                    placeholder="Enter product name"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Slug</label>
+                  <input
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.slug}
+                    onChange={(e) => onChange('slug', e.target.value)}
+                    placeholder="product-slug"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">SKU</label>
+                  <input
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.sku}
+                    onChange={(e) => onChange('sku', e.target.value)}
+                    placeholder="SKU001"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Brand</label>
+                  <input
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.brand}
+                    onChange={(e) => onChange('brand', e.target.value)}
+                    placeholder="Brand name"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Category</label>
+                  <select
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.categoryId}
+                    onChange={(e) => onChange('categoryId', e.target.value)}
+                  >
+                    <option value="">Select category</option>
+                    {categories.map((cat) => (
+                      <option key={String(getId(cat))} value={String(getId(cat))}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Stock</label>
+                  <input
+                    type="number"
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.stock}
+                    onChange={(e) => onChange('stock', e.target.value)}
+                    placeholder="10"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">MRP</label>
+                  <input
+                    type="number"
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.mrp}
+                    onChange={(e) => onChange('mrp', e.target.value)}
+                    placeholder="999"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Selling Price</label>
+                  <input
+                    type="number"
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.sellingPrice}
+                    onChange={(e) => onChange('sellingPrice', e.target.value)}
+                    placeholder="799"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-sm font-medium">Description</label>
+                  <textarea
+                    rows={4}
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.description}
+                    onChange={(e) => onChange('description', e.target.value)}
+                    placeholder="Enter product description"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Discount</label>
+                  <input
+                    type="number"
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.discount}
+                    onChange={(e) => onChange('discount', e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="mb-2 block text-sm font-medium">Product Images</label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    You can upload multiple images
+                  </p>
+                </div>
+
+                {existingImages.length > 0 && (
+                  <div className="md:col-span-2">
+                    <label className="mb-2 block text-sm font-medium">Existing Images</label>
+                    <div className="flex flex-wrap gap-3">
+                      {existingImages.map((img, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '')}${img}`}
+                            alt={`existing-${index}`}
+                            className="h-20 w-20 rounded-lg object-cover border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeExistingImage(index)}
+                            className="absolute -right-2 -top-2 rounded-full bg-red-600 p-1 text-white"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {previewImages.length > 0 && (
+                  <div className="md:col-span-2">
+                    <label className="mb-2 block text-sm font-medium">New Selected Images</label>
+                    <div className="flex flex-wrap gap-3">
+                      {previewImages.map((img, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={img}
+                            alt={`preview-${index}`}
+                            className="h-20 w-20 rounded-lg object-cover border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeSelectedImage(index)}
+                            className="absolute -right-2 -top-2 rounded-full bg-red-600 p-1 text-white"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="md:col-span-2 grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={form.status}
+                      onChange={(e) => onChange('status', e.target.checked)}
+                    />
+                    Active
+                  </label>
+
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={form.isFeatured}
+                      onChange={(e) => onChange('isFeatured', e.target.checked)}
+                    />
+                    Featured
+                  </label>
+
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={form.isNewArrival}
+                      onChange={(e) => onChange('isNewArrival', e.target.checked)}
+                    />
+                    New Arrival
+                  </label>
+
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={form.isOffer}
+                      onChange={(e) => onChange('isOffer', e.target.checked)}
+                    />
+                    Offer Product
+                  </label>
+                </div>
+
+                <div className="md:col-span-2 flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="rounded-xl border px-4 py-2"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="rounded-xl bg-black px-5 py-2 text-white disabled:opacity-60"
+                  >
+                    {saving ? 'Saving...' : editing ? 'Update Product' : 'Create Product'}
+                  </button>
+                </div>
+              </form>
             </div>
-
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Product Name</label>
-                <input
-                  className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                  value={form.name}
-                  onChange={(e) => {
-                    const value = e.target.value
-                    setForm((prev) => ({
-                      ...prev,
-                      name: value,
-                      slug: prev.slug ? prev.slug : autoSlug(value),
-                    }))
-                  }}
-                  placeholder="Enter product name"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium">Slug</label>
-                <input
-                  className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                  value={form.slug}
-                  onChange={(e) => onChange('slug', e.target.value)}
-                  placeholder="product-slug"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium">SKU</label>
-                <input
-                  className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                  value={form.sku}
-                  onChange={(e) => onChange('sku', e.target.value)}
-                  placeholder="SKU001"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium">Brand</label>
-                <input
-                  className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                  value={form.brand}
-                  onChange={(e) => onChange('brand', e.target.value)}
-                  placeholder="Brand name"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium">Category</label>
-                <select
-                  className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                  value={form.categoryId}
-                  onChange={(e) => onChange('categoryId', e.target.value)}
-                >
-                  <option value="">Select category</option>
-                  {categories.map((cat) => (
-                    <option key={String(getId(cat))} value={String(getId(cat))}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium">Stock</label>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                  value={form.stock}
-                  onChange={(e) => onChange('stock', e.target.value)}
-                  placeholder="10"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium">MRP</label>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                  value={form.mrp}
-                  onChange={(e) => onChange('mrp', e.target.value)}
-                  placeholder="999"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium">Selling Price</label>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                  value={form.sellingPrice}
-                  onChange={(e) => onChange('sellingPrice', e.target.value)}
-                  placeholder="799"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="mb-1 block text-sm font-medium">Description</label>
-                <textarea
-                  rows={4}
-                  className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                  value={form.description}
-                  onChange={(e) => onChange('description', e.target.value)}
-                  placeholder="Enter product description"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium">Discount</label>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                  value={form.discount}
-                  onChange={(e) => onChange('discount', e.target.value)}
-                  placeholder="0"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium">Product Images</label>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  You can upload multiple images
-                </p>
-              </div>
-
-              {existingImages.length > 0 && (
-                <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium">Existing Images</label>
-                  <div className="flex flex-wrap gap-3">
-                    {existingImages.map((img, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '')}${img}`}
-                          alt={`existing-${index}`}
-                          className="h-20 w-20 rounded-lg object-cover border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeExistingImage(index)}
-                          className="absolute -right-2 -top-2 rounded-full bg-red-600 p-1 text-white"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {previewImages.length > 0 && (
-                <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium">New Selected Images</label>
-                  <div className="flex flex-wrap gap-3">
-                    {previewImages.map((img, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={img}
-                          alt={`preview-${index}`}
-                          className="h-20 w-20 rounded-lg object-cover border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeSelectedImage(index)}
-                          className="absolute -right-2 -top-2 rounded-full bg-red-600 p-1 text-white"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="md:col-span-2 grid grid-cols-2 gap-4 md:grid-cols-4">
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={form.status}
-                    onChange={(e) => onChange('status', e.target.checked)}
-                  />
-                  Active
-                </label>
-
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={form.isFeatured}
-                    onChange={(e) => onChange('isFeatured', e.target.checked)}
-                  />
-                  Featured
-                </label>
-
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={form.isNewArrival}
-                    onChange={(e) => onChange('isNewArrival', e.target.checked)}
-                  />
-                  New Arrival
-                </label>
-
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={form.isOffer}
-                    onChange={(e) => onChange('isOffer', e.target.checked)}
-                  />
-                  Offer Product
-                </label>
-              </div>
-
-              <div className="md:col-span-2 flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="rounded-xl border px-4 py-2"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded-xl bg-black px-5 py-2 text-white disabled:opacity-60"
-                >
-                  {saving ? 'Saving...' : editing ? 'Update Product' : 'Create Product'}
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   )
 }

@@ -63,26 +63,31 @@ export default function OfferPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Offer | null>(null)
   const [form, setForm] = useState<OfferForm>(initialForm)
 
-  const fetchOffers = async () => {
-    try {
-      setLoading(true)
-      setError('')
-      const res = await offerAPI.getAll()
-      setOffers(normalizeList(res))
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to load offers')
-    } finally {
-      setLoading(false)
-    }
-  }
+ const fetchOffers = async () => {
+  try {
+    setLoading(true)
+    setError("")
 
-  useEffect(() => {
-    fetchOffers()
-  }, [])
+    const res = await offerAPI.getAll(page, 10, search)
+
+    setOffers(res.data.data || [])
+    setTotalPages(res.data.pagination?.pages || 1)
+  } catch (err: any) {
+    setError(err?.response?.data?.message || "Failed to load offers")
+  } finally {
+    setLoading(false)
+  }
+}
+
+useEffect(() => {
+  fetchOffers()
+}, [page, search])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -212,7 +217,10 @@ export default function OfferPage() {
             className="rounded-xl border px-4 py-2 outline-none w-64 bg-white dark:bg-[#1e1e1e]"
             placeholder="Search offers..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(1)
+            }}
           />
           <button
             onClick={openCreate}
@@ -232,76 +240,109 @@ export default function OfferPage() {
         ) : filtered.length === 0 ? (
           <div className="p-6 text-gray-500">No offers found.</div>
         ) : (
-          <div className="overflow-auto">
-            <table className="w-full min-w-[1000px]">
-              <thead className="bg-gray-50 dark:bg-[#252525]">
-                <tr className="text-left text-sm">
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Banner</th>
-                  <th className="px-4 py-3">Discount Type</th>
-                  <th className="px-4 py-3">Discount</th>
-                  <th className="px-4 py-3">Start Date</th>
-                  <th className="px-4 py-3">End Date</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((item) => (
-                  <tr key={getId(item)} className="border-t">
-                    <td className="px-4 py-3 font-medium">{item.name}</td>
-                    <td className="px-4 py-3">
-                      {item.bannerImage ? (
-                        <img
-                          src={`${IMAGE_BASE_URL}${item.bannerImage}`}
-                          alt={item.name}
-                          className="h-10 w-16 rounded-lg object-cover border"
-                        />
-                      ) : (
-                        '-'
-                      )}
-                    </td>
-                    <td className="px-4 py-3">{item.discountType || '-'}</td>
-                    <td className="px-4 py-3">{item.discount ?? 0}</td>
-                    <td className="px-4 py-3">
-                      {item.startDate ? new Date(item.startDate).toLocaleDateString() : '-'}
-                    </td>
-                    <td className="px-4 py-3">
-                      {item.endDate ? new Date(item.endDate).toLocaleDateString() : '-'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs ${item.status === false || item.status === 'inactive'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-green-100 text-green-700'
-                          }`}
-                      >
-                        {item.status === false || item.status === 'inactive'
-                          ? 'Inactive'
-                          : 'Active'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => openEdit(item)}
-                          className="rounded-lg border p-2 hover:bg-gray-50 dark:hover:bg-[#2a2a2a]"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item)}
-                          className="rounded-lg border p-2 text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+          <>
+            <div className="overflow-auto">
+              <table className="w-full min-w-[1000px]">
+                <thead className="bg-gray-50 dark:bg-[#252525]">
+                  <tr className="text-left text-sm">
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Banner</th>
+                    <th className="px-4 py-3">Discount Type</th>
+                    <th className="px-4 py-3">Discount</th>
+                    <th className="px-4 py-3">Start Date</th>
+                    <th className="px-4 py-3">End Date</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filtered.map((item) => (
+                    <tr key={getId(item)} className="border-t">
+                      <td className="px-4 py-3 font-medium">{item.name}</td>
+                      <td className="px-4 py-3">
+                        {item.bannerImage ? (
+                          <img
+                            src={`${IMAGE_BASE_URL}${item.bannerImage}`}
+                            alt={item.name}
+                            className="h-10 w-16 rounded-lg object-cover border"
+                          />
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td className="px-4 py-3">{item.discountType || '-'}</td>
+                      <td className="px-4 py-3">{item.discount ?? 0}</td>
+                      <td className="px-4 py-3">
+                        {item.startDate ? new Date(item.startDate).toLocaleDateString() : '-'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {item.endDate ? new Date(item.endDate).toLocaleDateString() : '-'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs ${item.status === false || item.status === 'inactive'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-green-100 text-green-700'
+                            }`}
+                        >
+                          {item.status === false || item.status === 'inactive'
+                            ? 'Inactive'
+                            : 'Active'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => openEdit(item)}
+                            className="rounded-lg border p-2 hover:bg-gray-50 dark:hover:bg-[#2a2a2a]"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item)}
+                            className="rounded-lg border p-2 text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex items-center justify-center gap-2 border-t bg-white py-4 dark:bg-[#1e1e1e]">
+              <button
+                disabled={loading || page === 1}
+                onClick={() => setPage(page - 1)}
+                className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Previous
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setPage(num)}
+                  className={`rounded-lg border px-4 py-2 ${page === num
+                      ? "bg-black text-white"
+                      : "hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"
+                    }`}
+                >
+                  {num}
+                </button>
+              ))}
+
+              <button
+                disabled={loading || page === totalPages}
+                onClick={() => setPage(page + 1)}
+                className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </>
+
         )}
       </div>
 

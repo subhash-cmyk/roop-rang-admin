@@ -32,65 +32,72 @@ export const dashboardAPI = {
 
 // ================= CATEGORY =================
 export const categoryAPI = {
-  getAll: () => API.get('/categories'),
+  getAll: (page = 1, limit = 10, search = "") =>
+    API.get(`/categories?page=${page}&limit=${limit}&search=${search}`),
+
   getById: (id: string) => API.get(`/categories/${id}`),
 
   create: (data: FormData) =>
-    API.post('/categories', data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    API.post("/categories", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     }),
 
   update: (id: string, data: FormData) =>
     API.put(`/categories/${id}`, data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     }),
 
   delete: (id: string) => API.delete(`/categories/${id}`),
-}
+};
 
 // ================= PRODUCTS =================
 export const productAPI = {
-  getAll: () => API.get('/products'),
+  getAll: (page = 1, limit = 12, search = '') =>
+    API.get(`/products?page=${page}&limit=${limit}&search=${search}`),
+
   getById: (id: string) => API.get(`/products/${id}`),
-
-  create: (data: FormData) =>
-    API.post('/products', data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
-
-  update: (id: string, data: FormData) =>
-    API.put(`/products/${id}`, data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
-
+  create: (data: FormData) => API.post('/products', data),
+  update: (id: string, data: FormData) => API.put(`/products/${id}`, data),
   delete: (id: string) => API.delete(`/products/${id}`),
 }
 
 // ================= OFFERS =================
 export const offerAPI = {
-  getAll: () => API.get('/offers'),
+  getAll: (page = 1, limit = 10, search = "") =>
+    API.get(`/offers?page=${page}&limit=${limit}&search=${search}`),
+
   getById: (id: string) => API.get(`/offers/${id}`),
 
   create: (data: FormData) =>
-    API.post('/offers', data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    API.post("/offers", data, {
+      headers: { "Content-Type": "multipart/form-data" },
     }),
 
   update: (id: string, data: FormData) =>
     API.put(`/offers/${id}`, data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { "Content-Type": "multipart/form-data" },
     }),
 
   delete: (id: string) => API.delete(`/offers/${id}`),
-}
+};
 
 // ================= USERS =================
 export const userAPI = {
-  getAll: () => API.get('/users'),
+  getAll: (page = 1, limit = 10, search = "") =>
+    API.get(`/users?page=${page}&limit=${limit}&search=${search}`),
+
   getById: (id: string) => API.get(`/users/${id}`),
-  update: (id: string, data: any) => API.put(`/users/${id}`, data),
-  delete: (id: string) => API.delete(`/users/${id}`),
-}
+
+  update: (id: string, data: any) =>
+    API.put(`/users/${id}`, data),
+
+  delete: (id: string) =>
+    API.delete(`/users/${id}`),
+};
 
 // ================= CONTACT =================
 export const contactAPI = {
@@ -102,12 +109,18 @@ export const contactAPI = {
 
 // ================= INQUIRY =================
 export const inquiryAPI = {
-  getAll: () => API.get('/inquiry'),
-  getById: (id: string) => API.get(`/inquiry/${id}`),
-  reply: (id: string, data: any) => API.put(`/inquiry/${id}`, data),
-  delete: (id: string) => API.delete(`/inquiry/${id}`),
-}
+  getAll: (page:number = 1, limit:number = 20) =>
+    API.get(`/inquiry?page=${page}&limit=${limit}`),
 
+  getById: (id:string) =>
+    API.get(`/inquiry/${id}`),
+
+  reply: (id:string, data:any) =>
+    API.put(`/inquiry/${id}`, data),
+
+  delete: (id:string) =>
+    API.delete(`/inquiry/${id}`),
+};
 // ================= PRIVACY =================
 export const privacyAPI = {
   get: () => API.get('/privacy-policy'),
