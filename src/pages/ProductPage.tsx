@@ -16,6 +16,8 @@ type Product = {
   slug?: string
   sku?: string
   brand?: string
+  ingredients?: string
+  howToUse?: string
   description?: string
   mrp?: number
   sellingPrice?: number
@@ -41,15 +43,22 @@ type ProductForm = {
   slug: string
   sku: string
   brand: string
+
   description: string
+  ingredients: string
+  howToUse: string
+
   mrp: string
   sellingPrice: string
   stock: string
+
   categoryId: string
+
   status: boolean
   isFeatured: boolean
   isNewArrival: boolean
   isOffer: boolean
+
   discount: string
 }
 
@@ -58,15 +67,22 @@ const initialForm: ProductForm = {
   slug: '',
   sku: '',
   brand: '',
+
   description: '',
+  ingredients: '',
+  howToUse: '',
+
   mrp: '',
   sellingPrice: '',
   stock: '',
+
   categoryId: '',
+
   status: true,
   isFeatured: false,
   isNewArrival: false,
   isOffer: false,
+
   discount: '',
 }
 
@@ -184,6 +200,8 @@ export default function ProductPage() {
       isNewArrival: (item as any).isNewArrival ?? false,
       isOffer: (item as any).isOffer ?? false,
       discount: (item as any).discount != null ? String((item as any).discount) : '',
+      ingredients: item.ingredients || '',
+      howToUse: item.howToUse || '',
     })
 
     const oldImages = item.images?.map((img) => img.url) || []
@@ -254,6 +272,8 @@ export default function ProductPage() {
       payload.append('isNewArrival', String(form.isNewArrival))
       payload.append('isOffer', String(form.isOffer))
       payload.append('discount', form.discount || '0')
+      payload.append("ingredients", form.ingredients)
+      payload.append("howToUse", form.howToUse)
 
       // if you want to keep old images during update
       existingImages.forEach((img) => {
@@ -340,115 +360,115 @@ export default function ProductPage() {
         ) : filtered.length === 0 ? (
           <div className="p-6 text-gray-500">No products found.</div>
         ) : (
-        <>
-          <div className="overflow-auto">
-            <table className="w-full min-w-[1200px]">
-              <thead className="bg-gray-50 dark:bg-[#252525]">
-                <tr className="text-left text-sm">
-                  <th className="px-4 py-3">Image</th>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">SKU</th>
-                  <th className="px-4 py-3">Brand</th>
-                  <th className="px-4 py-3">Category</th>
-                  <th className="px-4 py-3">MRP</th>
-                  <th className="px-4 py-3">Selling Price</th>
-                  <th className="px-4 py-3">Stock</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Created</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((item) => (
-                  <tr key={String(getId(item))} className="border-t">
-                    <td className="px-4 py-3">
-                      {item.images?.[0]?.url ? (
-                        <img
-                          src={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '')}${item.images[0].url}`}
-                          alt={item.name}
-                          className="h-12 w-12 rounded-lg object-cover border"
-                        />
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td className="px-4 py-3 font-medium">{item.name}</td>
-                    <td className="px-4 py-3">{item.sku || '-'}</td>
-                    <td className="px-4 py-3">{item.brand || '-'}</td>
-                    <td className="px-4 py-3">{item.category?.name || '-'}</td>
-                    <td className="px-4 py-3">{item.mrp ?? 0}</td>
-                    <td className="px-4 py-3">{item.sellingPrice ?? 0}</td>
-                    <td className="px-4 py-3">{item.stock ?? 0}</td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs ${item.status === false || item.status === 'inactive' || item.status === 'INACTIVE'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-green-100 text-green-700'
-                          }`}
-                      >
-                        {item.status === false || item.status === 'inactive' || item.status === 'INACTIVE'
-                          ? 'Inactive'
-                          : 'Active'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => openEdit(item)}
-                          className="rounded-lg border p-2 hover:bg-gray-50 dark:hover:bg-[#2a2a2a]"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item)}
-                          className="rounded-lg border p-2 text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+          <>
+            <div className="overflow-auto">
+              <table className="w-full min-w-[1200px]">
+                <thead className="bg-gray-50 dark:bg-[#252525]">
+                  <tr className="text-left text-sm">
+                    <th className="px-4 py-3">Image</th>
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">SKU</th>
+                    <th className="px-4 py-3">Brand</th>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">MRP</th>
+                    <th className="px-4 py-3">Selling Price</th>
+                    <th className="px-4 py-3">Stock</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Created</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        {/* Pagination */}
-        
-        <div className="flex items-center justify-center gap-2 border-t bg-white py-4 dark:bg-[#1e1e1e]">
-          <button
-            disabled={loading || page === 1}
-            onClick={() => setPage(page - 1)}
-            className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Previous
-          </button>
+                </thead>
+                <tbody>
+                  {filtered.map((item) => (
+                    <tr key={String(getId(item))} className="border-t">
+                      <td className="px-4 py-3">
+                        {item.images?.[0]?.url ? (
+                          <img
+                            src={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '')}${item.images[0].url}`}
+                            alt={item.name}
+                            className="h-12 w-12 rounded-lg object-cover border"
+                          />
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td className="px-4 py-3 font-medium">{item.name}</td>
+                      <td className="px-4 py-3">{item.sku || '-'}</td>
+                      <td className="px-4 py-3">{item.brand || '-'}</td>
+                      <td className="px-4 py-3">{item.category?.name || '-'}</td>
+                      <td className="px-4 py-3">{item.mrp ?? 0}</td>
+                      <td className="px-4 py-3">{item.sellingPrice ?? 0}</td>
+                      <td className="px-4 py-3">{item.stock ?? 0}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs ${item.status === false || item.status === 'inactive' || item.status === 'INACTIVE'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-green-100 text-green-700'
+                            }`}
+                        >
+                          {item.status === false || item.status === 'inactive' || item.status === 'INACTIVE'
+                            ? 'Inactive'
+                            : 'Active'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => openEdit(item)}
+                            className="rounded-lg border p-2 hover:bg-gray-50 dark:hover:bg-[#2a2a2a]"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item)}
+                            className="rounded-lg border p-2 text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Pagination */}
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-            <button
-              key={num}
-              onClick={() => setPage(num)}
-              className={`rounded-lg border px-4 py-2 transition-all ${page === num
-                  ? "bg-black text-white"
-                  : "hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"
-                }`}
-            >
-              {num}
-            </button>
-          ))}
+            <div className="flex items-center justify-center gap-2 border-t bg-white py-4 dark:bg-[#1e1e1e]">
+              <button
+                disabled={loading || page === 1}
+                onClick={() => setPage(page - 1)}
+                className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Previous
+              </button>
 
-          <button
-            disabled={loading || page === totalPages}
-            onClick={() => setPage(page + 1)}
-            className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-        </>
-    )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setPage(num)}
+                  className={`rounded-lg border px-4 py-2 transition-all ${page === num
+                    ? "bg-black text-white"
+                    : "hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"
+                    }`}
+                >
+                  {num}
+                </button>
+              ))}
+
+              <button
+                disabled={loading || page === totalPages}
+                onClick={() => setPage(page + 1)}
+                className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
 
@@ -570,6 +590,32 @@ export default function ProductPage() {
                     value={form.description}
                     onChange={(e) => onChange('description', e.target.value)}
                     placeholder="Enter product description"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-sm font-medium">
+                    Ingredients
+                  </label>
+
+                  <textarea
+                    rows={4}
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.ingredients}
+                    onChange={(e) => onChange('ingredients', e.target.value)}
+                    placeholder="Enter product ingredients"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-sm font-medium">
+                    How To Use
+                  </label>
+
+                  <textarea
+                    rows={4}
+                    className="w-full rounded-xl border px-4 py-2 bg-white dark:bg-[#121212]"
+                    value={form.howToUse}
+                    onChange={(e) => onChange('howToUse', e.target.value)}
+                    placeholder="How to use this product"
                   />
                 </div>
 
