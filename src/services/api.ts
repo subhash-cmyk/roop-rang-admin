@@ -201,13 +201,8 @@ export const aboutAPI = {
     return res.data;
   },
 
-  save: async (data: FormData) => {
-    const res = await API.post("/about", data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
+  save: async (data: any) => {
+    const res = await API.post("/about", data);
     return res.data;
   },
 };
