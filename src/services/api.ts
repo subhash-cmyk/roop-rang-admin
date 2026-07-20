@@ -32,7 +32,7 @@ export const dashboardAPI = {
 
 // ================= CATEGORY =================
 export const categoryAPI = {
-  getAll: (page = 1, limit = 10, search = "") =>
+  getAll: (page = 1, limit = 100, search = "") =>
     API.get(`/categories?page=${page}&limit=${limit}&search=${search}`),
 
   getById: (id: string) => API.get(`/categories/${id}`),
