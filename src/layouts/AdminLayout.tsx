@@ -12,6 +12,7 @@ import {
   LogOut,
   Moon,
   Sun,
+  Star,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -66,6 +67,10 @@ export default function AdminLayout() {
       title: 'About Us',
       description: 'Manage About Us page content.',
     },
+    '/testimonials': {
+      title: 'Testimonials',
+      description: 'Manage customer testimonials and reviews.',
+    },
   }
 
   const currentPage =
@@ -86,6 +91,7 @@ export default function AdminLayout() {
     { to: '/inquiries', icon: <MessageSquare size={18} />, label: 'Inquiries' },
     { to: '/users', icon: <Users size={18} />, label: 'Users' },
     { to: '/about', icon: <FileText size={18} />, label: 'About Us' },
+    { to: '/testimonials', icon: <Star size={18} />, label: 'Testimonials' },
     { to: '/privacy', icon: <Shield size={18} />, label: 'Privacy Policy' },
     { to: '/terms', icon: <FileText size={18} />, label: 'Terms & Conditions' },
     { to: '/settings', icon: <Settings size={18} />, label: 'Settings' },

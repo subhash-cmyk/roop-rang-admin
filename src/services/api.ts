@@ -206,3 +206,27 @@ export const aboutAPI = {
     return res.data;
   },
 };
+
+//============== TESTIMONIALS ==============================
+export const testimonialAPI = {
+  getAll: (page = 1, limit = 10, search = "") =>
+    API.get(`/testimonials?page=${page}&limit=${limit}&search=${search}`),
+
+  getById: (id: string) => API.get(`/testimonials/${id}`),
+
+  create: (data: FormData) =>
+    API.post("/testimonials", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
+
+  update: (id: string, data: FormData) =>
+    API.put(`/testimonials/${id}`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
+
+  delete: (id: string) => API.delete(`/testimonials/${id}`),
+};
